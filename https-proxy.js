@@ -19,12 +19,17 @@ var getHostPortFromString = function (hostString, defaultPort) {
     return ( [host, port] );
 };
 
+const proxySslConnectionToDomain = (domain, port) => {
+    // stub me
+    debug("Proxying HTTPS request for:", domain, port)
+}
+
 module.exports =
     (req, socket, bodyhead) => {
         var hostPort = getHostPortFromString(req.url, 443);
         var hostDomain = hostPort[0];
         var port = parseInt(hostPort[1]);
-        debug("Proxying HTTPS request for:", hostDomain, port);
+        proxySslConnectionToDomain(hostDomain, port)
 
         var proxySocket = new net.Socket();
         proxySocket.connect(port, hostDomain, function () {
@@ -58,3 +63,5 @@ module.exports =
             proxySocket.end();
         });
     }
+
+module.exports.proxySslConnectionToDomain = proxySslConnectionToDomain

@@ -6,15 +6,41 @@ const debug = require('debug')('proxy')
 
 const proxy = new httpProxy.createProxyServer()
 
-const port = process.env.PORT || 1337;
-
 const server = http.createServer((req, res) => {
-    const { host, protocol } = url.parse(req.url)
-    const target = `${protocol}//${host}`
-    debug('Request for', req.url, host, protocol)
-    proxy.web(req, res, { target })
-}).listen(port, () => {
-    console.log(`HTTP proxy listening on http://localhost:${port}`)
+    proxyRequestToUrl(req.url, req, res)
 })
 
 server.addListener('connect', httpsProxy)
+
+const proxyRequestToUrl = (reqUrl, req, res) => {
+    // stub me
+    debug('Request for', reqUrl)
+    const { host, protocol } = url.parse(reqUrl)
+    const target = `${protocol}//${host}`
+    proxy.web(req, res, { target })
+}
+
+if (!module.parent) {
+    const port = process.env.PORT || 1337;
+
+    server.listen(port, () => {
+        console.log(`HTTP proxy listening on http://localhost:${port}`)
+    })
+}
+
+module.exports = {
+    start: (port) => {
+        return new Promise((resolve, reject) => {
+            server.listen(port, (err) => {
+                if (err) {
+                    return reject(err)
+                }
+                resolve()
+            })
+        })
+    },
+
+    proxyRequestToUrl,
+
+    proxySslConnectionToDomain: httpsProxy.proxySslConnectionToDomain
+}
