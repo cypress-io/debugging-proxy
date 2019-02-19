@@ -1,32 +1,32 @@
-node-debug-proxy
+node-debugging-proxy
 ===
 
-[![NPM](https://nodei.co/npm/debug-proxy.svg?downloads=true)](https://npmjs.org/package/debug-proxy)
+[![NPM](https://nodei.co/npm/debugging-proxy.svg?downloads=true)](https://npmjs.org/package/debugging-proxy)
 
 A simple HTTP proxy that proxies HTTP and HTTPS requests transparently. Useful for debugging that your application works correctly with proxies.
 
 ## Installation
 ```
-npm -i g debug-proxy
+npm -i g debugging-proxy
 
 ## or, if you prefer yarn
-yarn global add debug-proxy
+yarn global add debugging-proxy
 ```
 
 ## Usage
 
 ### Start the proxy on port 1337
 ```
-debug-proxy
+debugging-proxy
 ```
 
 ### Use a custom port
 ```
-PORT=1234 debug-proxy
+PORT=1234 debugging-proxy
 ```
 
 ### Show logs of all requests
 ```
-DEBUG=proxy debug-proxy
+DEBUG=proxy debugging-proxy
 ```
 
