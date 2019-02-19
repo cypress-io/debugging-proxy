@@ -34,7 +34,7 @@ DEBUG=proxy debugging-proxy
 
 ```js
 const debugProxy = require('debugging-proxy')
-debugProxy.start(3000, () => {
+debugProxy.start(3000).then(() => {
     // using your stubbing/spying library of choice...
     stub(debugProxy.proxyRequestToUrl)
     stub(debugProxy.proxySslConnectionToDomain)
