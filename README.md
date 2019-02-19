@@ -7,7 +7,7 @@ A simple HTTP proxy that proxies HTTP and HTTPS requests transparently. Useful f
 
 ## Installation
 ```
-npm -i g debugging-proxy
+npm i -g debugging-proxy
 
 ## or, if you prefer yarn
 yarn global add debugging-proxy
