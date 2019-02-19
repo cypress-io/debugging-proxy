@@ -23,14 +23,6 @@ const proxyRequestToUrl = (reqUrl, req, res) => {
 
 }
 
-if (!module.parent) {
-    const port = process.env.PORT || 1337;
-
-    server.listen(port, () => {
-        console.log(`HTTP proxy listening on http://localhost:${port}`)
-    })
-}
-
 module.exports = {
     start: (port) => {
         return new Promise((resolve, reject) => {
