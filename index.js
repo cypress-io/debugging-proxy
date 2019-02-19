@@ -17,7 +17,10 @@ const proxyRequestToUrl = (reqUrl, req, res) => {
     debug('Request for', reqUrl)
     const { host, protocol } = url.parse(reqUrl)
     const target = `${protocol}//${host}`
-    proxy.web(req, res, { target })
+    proxy.web(req, res, { target }, (e) => {
+        console.error("Error requesting", reqUrl, e.message)
+    })
+
 }
 
 if (!module.parent) {
