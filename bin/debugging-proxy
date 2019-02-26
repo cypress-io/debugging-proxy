@@ -1,8 +1,10 @@
 #!/usr/bin/env node
 const path = require('path')
+const debuggingProxy = require(path.join(__dirname, '../index'))
 
+const proxy = new debuggingProxy()
 const port = process.env.PORT || 1337;
 
-require(path.join(__dirname, '../index')).start(port).then(() => {
+proxy.start(port).then(() => {
     console.log(`HTTP proxy listening on http://localhost:${port}`)
 })

@@ -34,12 +34,23 @@ DEBUG=proxy debugging-proxy
 
 ```js
 const debugProxy = require('debugging-proxy')
-debugProxy.start(3000).then(() => {
-    // using your stubbing/spying library of choice...
-    stub(debugProxy.proxyRequestToUrl)
-    stub(debugProxy.proxySslConnectionToDomain)
-    /// make some requests, then...
-    debugProxy.proxyRequestToUrl.should.be.calledWith('http://google.com')
-    debugProxy.proxySslConnectionToDomain.should.be.calledWith('google.com')
+
+// create an instance
+const proxy = new debugProxy()
+
+// using your stubbing/spying library of choice...
+spy(proxy.proxyRequestToUrl)
+spy(proxy.proxySslConnectionToDomain)
+
+// start an httpproxy on localhost:3000
+proxy.start(3000).then(() => {
+    // make some requests using the proxy at localhost:3000, then...
+    expect(proxy.proxyRequestToUrl).to.be.calledWith('http://google.com')
+    expect(proxy.proxySslConnectionToDomain).to.be.calledWith('google.com')
+
+    // clean up
+    proxy.stop().then(() => {
+        console.log('All done!')
+    })
 })
 ```

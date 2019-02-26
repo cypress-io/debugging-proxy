@@ -4,38 +4,53 @@ const http = require('http')
 const url = require('url')
 const debug = require('debug')('proxy')
 
-const proxy = new httpProxy.createProxyServer()
+function DebuggingProxy() {
+    this.server = http.createServer((req, res) => {
+        proxyRequestToUrl(req.url, req, res)
+    })
 
-const server = http.createServer((req, res) => {
-    proxyRequestToUrl(req.url, req, res)
-})
+    this.server.addListener('connect', this.httpsProxy.bind(this))
 
-server.addListener('connect', httpsProxy)
+    this.proxy = new httpProxy.createProxyServer()
+}
 
-const proxyRequestToUrl = (reqUrl, req, res) => {
+DebuggingProxy.prototype.start = function(port) {
+    return new Promise((resolve, reject) => {
+        this.server.listen(port, (err) => {
+            if (err) {
+                return reject(err)
+            }
+            debug('proxy started on port', port)
+            resolve()
+        })
+    })
+}
+
+DebuggingProxy.prototype.stop = function() {
+    return new Promise((resolve, reject) => {
+        this.server.close((err) => {
+            if (err) return reject(err)
+            debug('proxy stopped')
+            resolve()
+        })
+    })
+}
+
+DebuggingProxy.prototype.proxyRequestToUrl = function(reqUrl, req, res) {
     // stub me
     debug('Request for', reqUrl)
     const { host, protocol } = url.parse(reqUrl)
     const target = `${protocol}//${host}`
-    proxy.web(req, res, { target }, (e) => {
+    this.proxy.web(req, res, { target }, (e) => {
         console.error("Error requesting", reqUrl, e.message)
     })
-
 }
 
-module.exports = {
-    start: (port) => {
-        return new Promise((resolve, reject) => {
-            server.listen(port, (err) => {
-                if (err) {
-                    return reject(err)
-                }
-                resolve()
-            })
-        })
-    },
+DebuggingProxy.prototype.httpsProxy = httpsProxy
 
-    proxyRequestToUrl,
-
-    proxySslConnectionToDomain: httpsProxy.proxySslConnectionToDomain
+DebuggingProxy.prototype.proxySslConnectionToDomain = function(domain, port) {
+    // stub me
+    debug("Proxying HTTPS request for:", domain, port)
 }
+
+module.exports = DebuggingProxy
