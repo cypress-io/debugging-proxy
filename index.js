@@ -6,7 +6,7 @@ const debug = require('debug')('proxy')
 
 function DebuggingProxy() {
     this.server = http.createServer((req, res) => {
-        proxyRequestToUrl(req.url, req, res)
+        this.proxyRequestToUrl(req.url, req, res)
     })
 
     this.server.addListener('connect', this.httpsProxy.bind(this))
