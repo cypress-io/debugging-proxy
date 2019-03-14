@@ -24,12 +24,14 @@ module.exports = function (req, socket, bodyhead)  {
     var port = parseInt(hostPort[1]);
     this.proxySslConnectionToDomain(hostDomain, port)
 
+    socket.setNoDelay(true)
+
     var proxySocket = new net.Socket();
     proxySocket.connect(port, hostDomain, function () {
-        proxySocket.write(bodyhead);
+        proxySocket.setNoDelay(true)
         socket.write("HTTP/" + req.httpVersion + " 200 Connection established\r\n\r\n");
-    }
-    );
+        proxySocket.write(bodyhead);
+    });
 
     proxySocket.on('data', function (chunk) {
         socket.write(chunk);
