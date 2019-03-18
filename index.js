@@ -6,14 +6,10 @@ const debug = require('debug')('proxy')
 
 function DebuggingProxy(options = {}) {
     this.options = options
-
-    if (options.auth) {
-        this.correctAuth = `${Buffer.from(`${options.auth.username}:${options.auth.password}`).toString('base64')}`
-    }
+    this.setAuth(options.auth)
 
     this.server = http.createServer((req, res) => {
-        if (options.auth && !req.headers.authorization
-            || req.headers.authorization.split(' ', 2)[1] != this.correctAuth) {
+        if (!this.validateAuth(req)) {
             res.writeHead(401, 'Unauthorized')
             res.end()
             return
@@ -21,9 +17,23 @@ function DebuggingProxy(options = {}) {
         this.proxyRequestToUrl(req.url, req, res)
     })
 
+    this.httpsProxy = httpsProxy
     this.server.addListener('connect', this.httpsProxy.bind(this))
 
     this.proxy = new httpProxy.createProxyServer()
+}
+
+DebuggingProxy.prototype.setAuth = function(auth) {
+    if (!auth) {
+        this.correctAuth = undefined
+        return
+    }
+    this.correctAuth = `${Buffer.from(`${auth.username}:${auth.password}`).toString('base64')}`
+}
+
+DebuggingProxy.prototype.validateAuth = function(req) {
+    const proxyAuth = req.headers['proxy-authorization']
+    return !this.correctAuth || (proxyAuth && proxyAuth.split(' ', 2)[1] !== this.correctAuth)
 }
 
 DebuggingProxy.prototype.start = function(port) {
@@ -59,13 +69,12 @@ DebuggingProxy.prototype.proxyRequestToUrl = function(reqUrl, req, res) {
 }
 
 DebuggingProxy.prototype.httpsProxy = function(req, socket, bodyhead) {
-    this.proxySslConnectionToDomain(hostDomain, port)
-    if (this.options.auth && bodyhead.indexOf(this.correctAuth) === -1) {
+    if (this.validateAuth(req)) {
         socket.write("HTTP/" + req.httpVersion + " 401 Unauthorized\r\n\r\n")
         socket.end()
         return
     }
-    httpsProxy(req, socket, bodyhead)
+    this.httpsProxy(req, socket, bodyhead)
 }
 
 DebuggingProxy.prototype.proxySslConnectionToDomain = function(domain, port) {
