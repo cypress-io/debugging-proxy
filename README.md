@@ -30,13 +30,23 @@ PORT=1234 debugging-proxy
 DEBUG=proxy debugging-proxy
 ```
 
+### Require HTTP Basic Auth for proxy access
+```
+PROXY_USER=some-username PROXY_PASS=some-password debugging-proxy
+```
+
 ## Usage (as a module, in a test)
 
 ```js
 const debugProxy = require('debugging-proxy')
 
 // create an instance
-const proxy = new debugProxy()
+const proxy = new debugProxy({
+    auth: { // if `auth` is set, HTTP basic authentication to the proxy will be required using these credentials
+        username: 'foo',
+        password: 'bar'
+    }
+})
 
 // using your stubbing/spying library of choice...
 spy(proxy.proxyRequestToUrl)

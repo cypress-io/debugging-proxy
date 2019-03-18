@@ -2,7 +2,12 @@
 const path = require('path')
 const debuggingProxy = require(path.join(__dirname, '../index'))
 
-const proxy = new debuggingProxy()
+const proxy = new debuggingProxy({
+    auth: process.env.PROXY_USER && process.env.PROXY_PASS && {
+        username: process.env.PROXY_USER,
+        password: process.env.PROXY_PASS
+    }
+})
 const port = process.env.PORT || 1337;
 
 proxy.start(port).then(() => {
