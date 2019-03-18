@@ -45,7 +45,8 @@ const proxy = new debugProxy({
     auth: { // if `auth` is set, HTTP basic authentication to the proxy will be required using these credentials
         username: 'foo',
         password: 'bar'
-    }
+    },
+    keepRequests: false, // if `keepRequests` is set, the proxy will store a log of requests that can be retrieved using `proxy.getRequests()`
 })
 
 // using your stubbing/spying library of choice...
@@ -57,6 +58,8 @@ proxy.start(3000).then(() => {
     // make some requests using the proxy at localhost:3000, then...
     expect(proxy.proxyRequestToUrl).to.be.calledWith('http://google.com')
     expect(proxy.proxySslConnectionToDomain).to.be.calledWith('google.com')
+
+    expect(proxy.getRequests().find(incomingMessage => incomingMessage.ssl === false)).to.exist
 
     // clean up
     proxy.stop().then(() => {

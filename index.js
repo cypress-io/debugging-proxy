@@ -8,12 +8,9 @@ function DebuggingProxy(options = {}) {
     this.options = options
     this.setAuth(options.auth)
 
+    this.requests = []
+
     this.server = http.createServer((req, res) => {
-        if (!this.validateAuth(req)) {
-            res.writeHead(401, 'Unauthorized')
-            res.end()
-            return
-        }
         this.proxyRequestToUrl(req.url, req, res)
     })
 
@@ -21,6 +18,10 @@ function DebuggingProxy(options = {}) {
     this.server.addListener('connect', this.httpsProxy.bind(this))
 
     this.proxy = new httpProxy.createProxyServer()
+}
+
+DebuggingProxy.prototype.getRequests = function() {
+    return this.requests
 }
 
 DebuggingProxy.prototype.setAuth = function(auth) {
@@ -33,7 +34,7 @@ DebuggingProxy.prototype.setAuth = function(auth) {
 
 DebuggingProxy.prototype.validateAuth = function(req) {
     const proxyAuth = req.headers['proxy-authorization']
-    return !this.correctAuth || (proxyAuth && proxyAuth.split(' ', 2)[1] !== this.correctAuth)
+    return !this.correctAuth || (proxyAuth && proxyAuth.split(' ', 2)[1] === this.correctAuth)
 }
 
 DebuggingProxy.prototype.start = function(port) {
@@ -60,6 +61,16 @@ DebuggingProxy.prototype.stop = function() {
 
 DebuggingProxy.prototype.proxyRequestToUrl = function(reqUrl, req, res) {
     // stub me
+    if (!this.validateAuth(req)) {
+        res.writeHead(401, 'Unauthorized')
+        res.end()
+        return
+    }
+
+    if (this.options.keepRequests) {
+        this.requests.push(req)
+    }
+
     debug('Request for', reqUrl)
     const { host, protocol } = url.parse(reqUrl)
     const target = `${protocol}//${host}`
@@ -69,11 +80,17 @@ DebuggingProxy.prototype.proxyRequestToUrl = function(reqUrl, req, res) {
 }
 
 DebuggingProxy.prototype.httpsProxy = function(req, socket, bodyhead) {
-    if (this.validateAuth(req)) {
+    if (!this.validateAuth(req)) {
         socket.write("HTTP/" + req.httpVersion + " 401 Unauthorized\r\n\r\n")
         socket.end()
         return
     }
+
+    if (this.options.keepRequests) {
+        req.https = true
+        this.requests.push(req)
+    }
+
     this.httpsProxy(req, socket, bodyhead)
 }
 
