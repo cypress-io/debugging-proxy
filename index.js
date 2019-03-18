@@ -14,7 +14,7 @@ function DebuggingProxy(options = {}) {
         this.proxyRequestToUrl(req.url, req, res)
     })
 
-    this.httpsProxy = httpsProxy
+    this._httpsProxy = httpsProxy
     this.server.addListener('connect', this.httpsProxy.bind(this))
 
     this.proxy = new httpProxy.createProxyServer()
@@ -91,7 +91,7 @@ DebuggingProxy.prototype.httpsProxy = function(req, socket, bodyhead) {
         this.requests.push(req)
     }
 
-    this.httpsProxy(req, socket, bodyhead)
+    this._httpsProxy(req, socket, bodyhead)
 }
 
 DebuggingProxy.prototype.proxySslConnectionToDomain = function(domain, port) {
