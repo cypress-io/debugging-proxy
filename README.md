@@ -35,6 +35,11 @@ DEBUG=proxy debugging-proxy
 PROXY_USER=some-username PROXY_PASS=some-password debugging-proxy
 ```
 
+### Spawn an HTTPS proxy using a custom key and cert
+```
+HTTPS_KEY=/path/to/key.key HTTPS_CERT=/path/to/cert.pem debugging-proxy
+```
+
 ## Usage (as a module, in a test)
 
 ```js
@@ -47,6 +52,10 @@ const proxy = new debugProxy({
         password: 'bar'
     },
     keepRequests: false, // if `keepRequests` is set, the proxy will store a log of requests that can be retrieved using `proxy.getRequests()`
+    https: { // if https is set, https.createServer will be called with this key and cert to launch the server
+        key: fs.readFileSync('my-key.pem'),
+        cert: fs.readFileSync('my-cert.pem')
+    }
 })
 
 // using your stubbing/spying library of choice...

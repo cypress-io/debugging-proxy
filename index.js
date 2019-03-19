@@ -1,6 +1,7 @@
 const httpProxy = require('http-proxy')
 const httpsProxy = require('./https-proxy')
 const http = require('http')
+const https = require('https')
 const url = require('url')
 const debug = require('debug')('proxy')
 
@@ -10,9 +11,15 @@ function DebuggingProxy(options = {}) {
 
     this.requests = []
 
-    this.server = http.createServer((req, res) => {
+    const onConnection = (req, res) => {
         this.proxyRequestToUrl(req.url, req, res)
-    })
+    }
+
+    if (options.https) {
+        this.server = https.createServer(options.https, onConnection)
+    } else {
+        this.server = http.createServer(onConnection)
+    }
 
     this._httpsProxy = httpsProxy
     this.server.addListener('connect', this.httpsProxy.bind(this))
