@@ -25,6 +25,13 @@ function DebuggingProxy(options = {}) {
     this.server.addListener('connect', this.httpsProxy.bind(this))
 
     this.proxy = new httpProxy.createProxyServer()
+    this.server.on('upgrade', (req, socket, head) => {
+        debug('ws request received for', req.url)
+        if (options.keepRequests) {
+            this.requests.push(req)
+        }
+        this.proxy.ws(req, socket, head)
+    })
 }
 
 DebuggingProxy.prototype.getRequests = function() {
