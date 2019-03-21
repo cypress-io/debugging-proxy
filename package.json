@@ -5,7 +5,7 @@
     "url": "https://github.com/flotwig/node-debugging-proxy.git"
   },
   "homepage": "https://github.com/flotwig/node-debugging-proxy",
-  "version": "1.5.0",
+  "version": "1.5.1",
   "main": "index.js",
   "license": "MIT",
   "bin": {

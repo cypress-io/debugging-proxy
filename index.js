@@ -28,9 +28,12 @@ function DebuggingProxy(options = {}) {
     this.server.on('upgrade', (req, socket, head) => {
         debug('ws request received for', req.url)
         if (options.keepRequests) {
+            req.ws = true
             this.requests.push(req)
         }
-        this.proxy.ws(req, socket, head)
+        const { host, protocol } = url.parse(req.url)
+        const target = `${protocol}//${host}`
+        this.proxy.ws(req, socket, head, { target })
     })
 }
 
