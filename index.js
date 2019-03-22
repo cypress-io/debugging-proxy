@@ -92,7 +92,10 @@ DebuggingProxy.prototype.proxyRequestToUrl = function(reqUrl, req, res) {
     const { host, protocol } = url.parse(reqUrl)
     const target = `${protocol}//${host}`
     this.proxy.web(req, res, { target }, (e) => {
-        console.error("Error requesting", reqUrl, e.message)
+        // https://github.com/nodejitsu/node-http-proxy/blob/a3fe02d651d05d02d0ced377c22ae8345a2435a4/examples/http/error-handling.js#L47
+        res.writeHead(502);
+        res.end("There was an error proxying your request");
+        debug("Error requesting", reqUrl, e.message)
     })
 }
 
