@@ -1,10 +1,10 @@
 {
-  "name": "debugging-proxy",
+  "name": "@cypress/debugging-proxy",
   "repository": {
     "type": "git",
-    "url": "https://github.com/flotwig/node-debugging-proxy.git"
+    "url": "https://github.com/cypress-io/node-debugging-proxy.git"
   },
-  "homepage": "https://github.com/flotwig/node-debugging-proxy",
+  "homepage": "https://github.com/cypress-io/node-debugging-proxy",
   "version": "1.6.0",
   "main": "index.js",
   "license": "MIT",
@@ -13,6 +13,7 @@
   },
   "dependencies": {
     "debug": "^4.1.1",
-    "http-proxy": "^1.17.0"
+    "http-proxy": "^1.17.0",
+    "self-signed-cert": "^1.0.1"
   }
 }

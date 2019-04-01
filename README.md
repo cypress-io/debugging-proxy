@@ -1,16 +1,16 @@
 node-debugging-proxy
 ===
 
-[![NPM](https://nodei.co/npm/debugging-proxy.svg?downloads=true)](https://npmjs.org/package/debugging-proxy)
+[![NPM](https://nodei.co/npm/@cypress/debugging-proxy.svg?downloads=true)](https://npmjs.org/package/@cypress/debugging-proxy)
 
 A simple HTTP proxy that proxies HTTP and HTTPS requests transparently. Useful for debugging that your application works correctly with proxies.
 
 ## Installation
 ```
-npm i -g debugging-proxy
+npm i -g @cypress/debugging-proxy
 
 ## or, if you prefer yarn
-yarn global add debugging-proxy
+yarn global add @cypress/debugging-proxy
 ```
 
 ## Usage (as a standalone server)
@@ -43,7 +43,7 @@ HTTPS_KEY=/path/to/key.key HTTPS_CERT=/path/to/cert.pem debugging-proxy
 ## Usage (as a module, in a test)
 
 ```js
-const debugProxy = require('debugging-proxy')
+const debugProxy = require('@cypress/debugging-proxy')
 
 // create an instance
 const proxy = new debugProxy({
