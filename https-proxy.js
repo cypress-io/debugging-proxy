@@ -1,60 +1,59 @@
 const net = require('net')
+const parse = require('./utils/parse')
 
-// https://stackoverflow.com/a/32104777/3474615
-var regex_hostport = /^([^:]+)(:([0-9]+))?$/;
-
-var getHostPortFromString = function (hostString, defaultPort) {
-    var host = hostString;
-    var port = defaultPort;
-
-    var result = regex_hostport.exec(hostString);
-    if (result != null) {
-      host = result[1];
-      if (result[2] != null) {
-        port = result[3];
-      }
+module.exports = function (req, clientSocket, bodyhead, cb)  {
+    const [host, port] = parse.getHostPortFromString(req.url, 443);
+    
+    const shouldContinueProxying = cb({
+        req,
+        host,
+        port,
+        socket: clientSocket,
+        head: bodyhead,
+    })
+    
+    // stop the proxy if this returns false
+    if (!shouldContinueProxying) {
+        return
     }
 
-    return ( [host, port] );
-};
+    const proxySocket = new net.Socket();
 
-module.exports = function (req, socket, bodyhead)  {
-    var hostPort = getHostPortFromString(req.url, 443);
-    var hostDomain = hostPort[0];
-    var port = parseInt(hostPort[1]);
-    this.proxySslConnectionToDomain(hostDomain, port)
-
-    socket.setNoDelay(true)
-
-    var proxySocket = new net.Socket();
-    proxySocket.connect(port, hostDomain, function () {
-        proxySocket.setNoDelay(true)
-        socket.write("HTTP/" + req.httpVersion + " 200 Connection established\r\n\r\n");
+    clientSocket.setNoDelay(true)
+    proxySocket.setNoDelay(true)
+    
+    proxySocket.connect(port, host, function (err) {
+        if (err) {
+            clientSocket.write("HTTP/" + req.httpVersion + " 500 Connection error\r\n\r\n");
+            clientSocket.end();
+            return 
+        }
+        
+        clientSocket.write("HTTP/" + req.httpVersion + " 200 Connection established\r\n\r\n");
         proxySocket.write(bodyhead);
     });
 
     proxySocket.on('data', function (chunk) {
-        socket.write(chunk);
+        clientSocket.write(chunk);
     });
 
     proxySocket.on('end', function () {
-        socket.end();
+        clientSocket.end();
     });
 
-    proxySocket.on('error', function () {
-        socket.write("HTTP/" + req.httpVersion + " 500 Connection error\r\n\r\n");
-        socket.end();
+    proxySocket.on('error', function (err) {
+        clientSocket.destroy(err)
     });
 
-    socket.on('data', function (chunk) {
+    clientSocket.on('data', function (chunk) {
         proxySocket.write(chunk);
     });
 
-    socket.on('end', function () {
+    clientSocket.on('end', function () {
         proxySocket.end();
     });
 
-    socket.on('error', function () {
-        proxySocket.end();
+    clientSocket.on('error', function (err) {
+        proxySocket.destroy(err);
     });
 }

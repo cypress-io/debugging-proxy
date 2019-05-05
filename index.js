@@ -1,9 +1,10 @@
-const httpProxy = require('http-proxy')
-const httpsProxy = require('./https-proxy')
+const url = require('url')
 const http = require('http')
 const https = require('https')
-const url = require('url')
 const debug = require('debug')('proxy')
+const httpProxy = require('http-proxy')
+const httpsProxy = require('./https-proxy')
+const { getHostPortFromString } = require('./utils/parse')
 
 function DebuggingProxy(options = {}) {
     this.options = options
@@ -11,20 +12,32 @@ function DebuggingProxy(options = {}) {
 
     this.requests = []
 
-    const onConnection = (req, res) => {
-        this.proxyRequestToUrl(req.url, req, res)
+    const { onConnect, onRequest } = this.options
+    
+    // set onRequest callback function to options to default
+    this.onRequest = onRequest || this._onRequest
+    
+    // set onConnect callback function to options to default
+    this.onConnect = onConnect || this._onConnect
+
+    const requestListener = (req, res) => {
+        return this.onRequest(req.url, req, res)
+    }
+
+    const connectListener = (req, socket, head) => {
+        return this._httpsProxy(req, socket, head, this.onConnect)
     }
 
     if (options.https) {
-        this.server = https.createServer(options.https, onConnection)
+        this.server = https.createServer(options.https, requestListener)
     } else {
-        this.server = http.createServer(onConnection)
+        this.server = http.createServer(requestListener)
     }
 
     this._httpsProxy = httpsProxy
-    this.server.addListener('connect', this.httpsProxy.bind(this))
+    this.server.addListener('connect', connectListener)
 
-    this.proxy = new httpProxy.createProxyServer()
+    this.proxy = httpProxy.createProxyServer()
     this.server.on('upgrade', (req, socket, head) => {
         debug('ws request received for', req.url)
         if (options.keepRequests) {
@@ -76,7 +89,9 @@ DebuggingProxy.prototype.stop = function() {
     })
 }
 
-DebuggingProxy.prototype.proxyRequestToUrl = function(reqUrl, req, res) {
+DebuggingProxy.prototype.getHostPortFromString = getHostPortFromString
+
+DebuggingProxy.prototype._onRequest = function(reqUrl, req, res) {
     // stub me
     if (!this.validateAuth(req)) {
         res.writeHead(401, 'Unauthorized')
@@ -114,9 +129,11 @@ DebuggingProxy.prototype.httpsProxy = function(req, socket, bodyhead) {
     this._httpsProxy(req, socket, bodyhead)
 }
 
-DebuggingProxy.prototype.proxySslConnectionToDomain = function(domain, port) {
+DebuggingProxy.prototype._onConnect = function(domain, port) {
     // stub me
     debug("Proxying HTTPS request for:", domain, port)
+
+    return true
 }
 
 module.exports = DebuggingProxy
