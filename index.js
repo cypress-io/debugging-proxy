@@ -13,10 +13,10 @@ function DebuggingProxy(options = {}) {
     this.requests = []
 
     const { onConnect, onRequest } = this.options
-    
+
     // set onRequest callback function to options to default
     this.onRequest = onRequest || this._onRequest
-    
+
     // set onConnect callback function to options to default
     this.onConnect = onConnect || this._onConnect
 
@@ -25,6 +25,11 @@ function DebuggingProxy(options = {}) {
     }
 
     const connectListener = (req, socket, head) => {
+        if (this.options.keepRequests) {
+            req.https = true
+            this.requests.push(req)
+        }
+
         return this._httpsProxy(req, socket, head, this.onConnect)
     }
 
@@ -119,11 +124,6 @@ DebuggingProxy.prototype.httpsProxy = function(req, socket, bodyhead) {
         socket.write("HTTP/" + req.httpVersion + " 401 Unauthorized\r\n\r\n")
         socket.end()
         return
-    }
-
-    if (this.options.keepRequests) {
-        req.https = true
-        this.requests.push(req)
     }
 
     this._httpsProxy(req, socket, bodyhead)

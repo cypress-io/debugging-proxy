@@ -5,7 +5,7 @@
     "url": "https://github.com/cypress-io/node-debugging-proxy.git"
   },
   "homepage": "https://github.com/cypress-io/node-debugging-proxy",
-  "version": "2.0.0",
+  "version": "2.0.1",
   "main": "index.js",
   "license": "MIT",
   "bin": {
